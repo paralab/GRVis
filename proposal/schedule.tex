@@ -1,6 +1,6 @@
-For the given time frame, we will break up the project into two parts. The first part will consist of getting the python parallel rendering pipeline operational and will take place starting from March 15th until April 3rd when the first progress report is due. Then the second part, starting April 3rd until the due date April 19th, will involve extending this pipeline to cover an "advanced" topic which will be decided on when writing the progress report.
+For the given time frame, we will break up the project into two phases. The first phase will consist of getting the python parallel rendering pipeline operational and will take place starting from March 15th until April 3rd when the first progress report is due. Then the second phase, starting April 3rd until the due date April 19th, will involve extending this pipeline to cover an "advanced" topic which will be decided on when writing the progress report.
 
-For part 1, the tentative schedule is
+For phase 1, the tentative schedule is
 
 \begin{itemize}
 	\item \textbf{March 15th through March 18th:} Get sequential VTK rendering examples running using single pvtu files from black hole simulation using python.
@@ -9,9 +9,9 @@ For part 1, the tentative schedule is
 	\item \textbf{April 2nd and April 3rd:} Write up project progress report and decide on focus for part 2.
 \end{itemize}
 
-Once part 1 is complete, we will choose an advanced topic to explore and implement. This topic will be chosen during the progress report write-up and will include an updated schedule for the final April 3rd to April 19th time frame Some of the potential advanced topics include
+Once phase 1 is complete, we will choose an advanced topic to explore and implement. This topic will be chosen during the progress report write-up and will include an updated schedule for the final April 3rd to April 19th time frame Some of the potential advanced topics include
 
 \begin{itemize}
 	\item \textbf{In Situ Rendering:} Extend the GR code to use VTK to render the frames from memory to bypass file IO. Drastically reduces amount of data that needs to be stored and the data is already naturally partitioned among the same number of nodes and processes that generated it.
-	\item \textbf{Rank-4 Tensor Visualization:} Using a tensor decomposition such as tucker decomposition, convert the Ricci rank-4 tensors into a form that can be visualized. If the tensors can be reduced to a collection of vector fields, a multi-field flow visualization would be very interesting to see.
+	\item \textbf{Fourth Order Tensor Visualization:} Using a tensor decomposition such as tucker decomposition, convert the Ricci fourth order tensors into a form that can be visualized. If the tensors can be reduced to a collection of vector fields, a multi-field flow visualization would be very interesting to see.
 \end{itemize}
