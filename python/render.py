@@ -79,7 +79,7 @@ def renderGeometry(source,height=300,width=300,backgroundColor=[0,0,0]):
         #renderer_window.Render()
         #renderer_window.Render()
     else:
-        print rank
+        #print rank
         compManager.InitializeRMIs()
         compManager.GetController().ProcessRMIs()
         compManager.GetController().Finalize()
