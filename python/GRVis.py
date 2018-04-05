@@ -14,6 +14,7 @@ main python file for GR Visualization.
 import vtk as vtk
 import vtkio as vtkio
 import render as render
+import filters as filters
 import argparse as argparse
 from mpi4py import MPI
 
@@ -22,14 +23,16 @@ parser.add_argument("pvtu_name")
 args = parser.parse_args()
 
 def main():
-    #comm = vtk.vtkMPIController()
+    comm = vtk.vtkMPIController()
     #c.SetGlobalController(None)
-    #rank = comm.GetLocalProcessId()
-    #npes = comm.GetNumberOfProcesses()
-    #print ("rank %d of size %d" %(rank,npes))
-    pvtu_reader=vtkio.readPVTUFile(args.pvtu_name)
-    render.renderGeometry(pvtu_reader)
-
+    rank = comm.GetLocalProcessId()
+    npes = comm.GetNumberOfProcesses()
+    print ("rank %d of size %d" %(rank,npes))
+    pvtuReader=vtkio.readPVTUFile(args.pvtu_name)
+    gridSlice=filters.SliceFilter(pvtuReader)
+    #warpByScalar=filters.WarpByScalar(gridSlice,'U_CHI')
+    render.renderGeometry(gridSlice,varName='U_CHI',colorbyScalar=True,scalarBar=True)
+    #render.renderGeometry(gridSlice)
     
 
 

@@ -14,6 +14,7 @@ Contains the function utilities related to geometric rendering functions.
 
 import os
 import vtk as vtk
+import filters as filters
 from mpi4py import MPI
 
 '''
@@ -23,7 +24,7 @@ height: height of the rendering window
 width: width of the rendering window. 
 
 '''
-def renderGeometry(source,height=300,width=300,backgroundColor=[0,0,0]):
+def renderGeometry(source,windowSize=[300,300],backgroundColor=[0,0,0],varName='',colorbyScalar=False,scalarBar=True):
     
     rank = 0 
     npes = 1
@@ -37,28 +38,84 @@ def renderGeometry(source,height=300,width=300,backgroundColor=[0,0,0]):
     
     surfaceFilter = vtk.vtkDataSetSurfaceFilter()
     surfaceFilter.SetInputConnection(source.GetOutputPort())
+
+
+    # create custom light 
+    lightPosition=[0,0,1]
+    lightFocalPoint=[0,0,0]
+
+    light=vtk.vtkLight()
+    light.SetLightTypeToSceneLight()
+    light.SetPosition(lightPosition)
+    light.SetPositional(True)
+    light.SetConeAngle(10)
+    light.SetFocalPoint(lightFocalPoint)
+    light.SetDiffuseColor(1,0,0)
+    light.SetAmbientColor(0,1,0)
+    light.SetSpecularColor(0,0,1)
+
+    lightActor=vtk.vtkLightActor()
+    lightActor.SetLight(light)
+
+    # create camera
+    camera =vtk.vtkCamera()
+    camera.SetPosition(2048,2048,1048)
+    camera.SetFocalPoint(2048,2048,2048)
+
+
+    # Create the Renderer
+    renderer = vtk.vtkRenderer()
+    renderer.AddViewProp(lightActor) # add light
+    renderer.SetActiveCamera(camera) # set the camera
+    
     
     mapper = vtk.vtkPolyDataMapper()
     mapper.SetInputConnection(surfaceFilter.GetOutputPort())
-    #mapper.SetScalarRange(scalar_range)
+    
+    if colorbyScalar:
+        scalarRange=filters.ComputeScalarRange(source,varName)
+        mapper.ScalarVisibilityOn()
+        mapper.SetScalarRange(scalarRange)
+        mapper.SetScalarModeToUsePointFieldData()
+        
+        cMap=filters.GenerateDivergingColorMap()
+        mapper.SetLookupTable( cMap )
+        mapper.ColorByArrayComponent(varName,0)
+        
+
+        if scalarBar:
+            colorBar=vtk.vtkScalarBarActor()
+            colorBar.SetLookupTable(mapper.GetLookupTable())
+            colorBar.SetTitle(varName)
+            colorBar.SetNumberOfLabels(8)
+            #Create a lookup table to share between the mapper and the scalarbar
+            #colorBar.SetLookupTable( hueLut )
+            renderer.AddActor2D(colorBar)
+
+                       
+
+
     
     # Create the Actor
     actor = vtk.vtkActor()
     actor.SetMapper(mapper)
-
-    # Create the Renderer
-    renderer = vtk.vtkRenderer()
+    
     renderer.AddActor(actor)
+    #renderer.AddActor2D(colormap)
     renderer.SetBackground(backgroundColor[0], backgroundColor[1], backgroundColor[2]) # Set background to white
+    
      
     # Create the RendererWindow
     renderer_window = vtk.vtkRenderWindow()
     renderer_window.AddRenderer(renderer)
     renderer_window.SetWindowName("render view of %d" % rank)
-
+    renderer_window.SetSize(windowSize)
+    
     if npes > 1:
         compManager.SetRenderWindow(renderer_window)
         compManager.InitializePieces()
+        
+        
     
     def ExitMaster(a, b):
         #print("ExitMaster; I am %d / %d" % ( myProcId, numProcs ))
