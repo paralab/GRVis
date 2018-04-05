@@ -31,7 +31,7 @@ def main():
     pvtuReader=vtkio.ReadPVTUFile(args.pvtu_name)
     gridSlice=filters.SliceFilter(pvtuReader)
     #warpByScalar=filters.WarpByScalar(gridSlice,'U_CHI')
-    render.ParallelRenderGeometry(gridSlice,windowSize=[300,300],varName='U_CHI',colorbyScalar=True,scalarBar=True,saveImage=True,imageName='test.png')
+    render.ParallelRenderGeometry(gridSlice,windowSize=[1000,1000],varName='U_CHI',colorbyScalar=True,scalarBar=True,saveImage=True,imageName='test.png',useParallelRendering=False)
     #render.renderGeometry(gridSlice)
     
 
