@@ -19,7 +19,7 @@ from mpi4py import MPI
 '''
 @brief Reads the XML unstructed grid and retuns, vtkXMLUnstructuredGridReader (sequential)
 '''
-def readVTUFile(fname):
+def ReadVTUFile(fname):
     reader = vtk.vtkXMLUnstructuredGridReader()
     reader.SetFileName(fname)
     reader.Update()
@@ -31,11 +31,12 @@ def readVTUFile(fname):
 '''
 @brief Reads the XML partioned unstructed grid and retuns, vtkXMLPUnstructuredGridReader
 '''
-def readPVTUFile(fname):
+def ReadPVTUFile(fname):
     
     reader=vtk.vtkXMLPUnstructuredGridReader()
     reader.SetFileName(fname)
     reader.Update()
+    #print reader.GetNumberOfPieces()
     return reader
     
     

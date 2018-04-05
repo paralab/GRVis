@@ -13,18 +13,37 @@ Contains the function utilities related to geometric rendering functions.
 
 
 import os
+import sys
 import vtk as vtk
 import filters as filters
 from mpi4py import MPI
+
+'''
+Writes a screen shot to a file. 
+'''
+def SaveScreenShot(renderWindow,fileName):
+    windowToImageFilter=vtk.vtkWindowToImageFilter()
+    windowToImageFilter.SetInput(renderWindow)
+    #windowToImageFilter.SetMagnification(1); #set the resolution of the output image (3 times the current resolution of vtk render window)
+    windowToImageFilter.SetInputBufferTypeToRGBA(); #also record the alpha (transparency) channel
+    windowToImageFilter.ReadFrontBufferOff(); # read from the back buffer
+    windowToImageFilter.Update()
+       
+    pngWriter=vtk.vtkPNGWriter()
+    pngWriter.SetFileName(fileName)
+    pngWriter.SetInputConnection(windowToImageFilter.GetOutputPort())
+    pngWriter.Write()
+    print "image written"
+
+
 
 '''
 Generate a render window, for a given source, (uses parallel distributed memory rendering)
 source: source of the geometry to do the rendering
 height: height of the rendering window
 width: width of the rendering window. 
-
 '''
-def renderGeometry(source,windowSize=[300,300],backgroundColor=[0,0,0],varName='',colorbyScalar=False,scalarBar=True):
+def ParallelRenderGeometry(source,windowSize=[300,300],backgroundColor=[0,0,0],varName='',colorbyScalar=False,scalarBar=True,useParallelRendering=False,saveImage=False,imageName=''):
     
     rank = 0 
     npes = 1
@@ -88,6 +107,13 @@ def renderGeometry(source,windowSize=[300,300],backgroundColor=[0,0,0],varName='
             colorBar.SetLookupTable(mapper.GetLookupTable())
             colorBar.SetTitle(varName)
             colorBar.SetNumberOfLabels(8)
+            #colorBar.GetLabelTextProperty().SetFontSize(3)
+            #colorBar.GetTitleTextProperty().SetFontSize(3)
+            #colorBar.SetBarRatio (0.4)
+            #colorBar.GetAnnotationTextProperty().SetFontSize(3)
+            #print colorBar.GetMaximumHeightInPixels()
+            #colorBar.SetOrientationToHorizontal()
+            #colorBar.Update()
             #Create a lookup table to share between the mapper and the scalarbar
             #colorBar.SetLookupTable( hueLut )
             renderer.AddActor2D(colorBar)
@@ -111,7 +137,7 @@ def renderGeometry(source,windowSize=[300,300],backgroundColor=[0,0,0],varName='
     renderer_window.SetWindowName("render view of %d" % rank)
     renderer_window.SetSize(windowSize)
     
-    if npes > 1:
+    if npes > 1 and useParallelRendering:
         compManager.SetRenderWindow(renderer_window)
         compManager.InitializePieces()
         
@@ -127,11 +153,16 @@ def renderGeometry(source,windowSize=[300,300],backgroundColor=[0,0,0],varName='
                 contr.TriggerRMI(a, contr.GetBreakRMITag())
 
     if rank == 0:
-        iren = vtk.vtkRenderWindowInteractor()
-        iren.SetRenderWindow(renderer_window)
-        iren.AddObserver("ExitEvent", ExitMaster)
-        iren.Initialize()
-        iren.Start()
+        if saveImage:
+            renderer_window.Render()
+            SaveScreenShot(renderer_window,imageName)
+        else:
+            iren = vtk.vtkRenderWindowInteractor()
+            iren.SetRenderWindow(renderer_window)
+            iren.AddObserver("ExitEvent", ExitMaster)
+            iren.Initialize()
+            iren.Start()
+        
         #renderer_window.Render()
         #renderer_window.Render()
         #renderer_window.Render()

@@ -28,10 +28,10 @@ def main():
     rank = comm.GetLocalProcessId()
     npes = comm.GetNumberOfProcesses()
     print ("rank %d of size %d" %(rank,npes))
-    pvtuReader=vtkio.readPVTUFile(args.pvtu_name)
+    pvtuReader=vtkio.ReadPVTUFile(args.pvtu_name)
     gridSlice=filters.SliceFilter(pvtuReader)
     #warpByScalar=filters.WarpByScalar(gridSlice,'U_CHI')
-    render.renderGeometry(gridSlice,varName='U_CHI',colorbyScalar=True,scalarBar=True)
+    render.ParallelRenderGeometry(gridSlice,windowSize=[300,300],varName='U_CHI',colorbyScalar=True,scalarBar=True,saveImage=True,imageName='test.png')
     #render.renderGeometry(gridSlice)
     
 
