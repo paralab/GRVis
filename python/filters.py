@@ -14,6 +14,7 @@ All the filters, and filter helper functions.
 
 import vtk as vtk
 from mpi4py import MPI
+import numpy as np
 
 '''
 compute the slice of the octree. 
@@ -89,6 +90,65 @@ def GenerateDivergingColorMap(RGB1=[0,0,1],RGB2=[1,0,0],numColors=256):
         cc = ctf.GetColor(ss)
         lut.SetTableValue(ii,cc[0],cc[1],cc[2],1.0)
     return lut
+
+
+
+'''
+Extract the BH locations based on the shortest L2 distance to the previous known location. 
+'''
+
+def ExtractBHLocations(source,BH1PrevLoc=[0.0,0.0,0.0],BH2PrevLoc=[0.0,0.0,0.0],varName='U_CHI',tol=1e-3):
+    polyData=source.GetOutput()
+    pointData=polyData.GetPointData()
+    data=pointData.GetArray(varName)
+    data_range=data.GetRange()
+    minValue=data_range[0]
+    numPoints=polyData.GetNumberOfPoints()
+    bhLoc=[[0,0,0],[0,0,0]]
+
+    BH1PrevLoc=np.array(BH1PrevLoc)
+    BH2PrevLoc=np.array(BH2PrevLoc)
+    BH1CurrLoc=np.zeros((1,3))
+    BH2CurrLoc=np.zeros((1,3))
+
+    BH1L2=float('inf')
+    BH2L2=float('inf')
+
+    for p in range(numPoints):
+        value=data.GetComponent(p,0)
+        if abs(value-minValue)<tol:
+            # valid candidate
+            validMin=[0,0,0]
+            polyData.GetPoint(p,validMin)
+            validMin=np.array(validMin)
+            distBH1=np.linalg.norm(validMin-BH1PrevLoc)
+            distBH2=np.linalg.norm(validMin-BH2PrevLoc)
+            
+            if(distBH1<distBH2):
+                if(np.linalg.norm(validMin-BH1PrevLoc)<BH1L2):
+                    BH1L2=np.linalg.norm(validMin-BH1PrevLoc)
+                    BH1CurrLoc=validMin
+            elif(distBH1>distBH2):
+                if(np.linalg.norm(validMin-BH2PrevLoc)<BH2L2):
+                    BH2L2=np.linalg.norm(validMin-BH2PrevLoc)
+                    BH2CurrLoc=validMin
+            else:
+                if(np.linalg.norm(validMin-BH1PrevLoc)<BH1L2):
+                    BH1L2=np.linalg.norm(validMin-BH1PrevLoc)
+                    BH1CurrLoc=validMin
+
+                if(np.linalg.norm(validMin-BH2PrevLoc)<BH2L2):
+                    BH2L2=np.linalg.norm(validMin-BH2PrevLoc)
+                    BH2CurrLoc=validMin
+
+
+            
+
+            
+    bhLoc=[BH1CurrLoc.tolist(),BH2CurrLoc.tolist()]
+    return bhLoc
+
+
 
 
 

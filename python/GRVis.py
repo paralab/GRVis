@@ -17,6 +17,7 @@ import render as render
 import filters as filters
 import argparse as argparse
 from mpi4py import MPI
+import utils as utils
 
 parser = argparse.ArgumentParser()
 parser.add_argument("pvtu_name")
@@ -32,9 +33,15 @@ def main():
     #gridSlice=filters.SliceFilter(pvtuReader)
     #warpByScalar=filters.WarpByScalar(gridSlice,'U_CHI')
     #render.ParallelRenderGeometry(gridSlice,windowSize=[1000,1000],varName='U_CHI',colorbyScalar=True,scalarBar=True,saveImage=True,imageName='test.png',useParallelRendering=False)
-    render.VolumeRender(pvtuReader,windowSize=[300,300],varName="U_CHI")
+    #render.VolumeRender(pvtuReader,windowSize=[300,300],varName="U_CHI")
     #render.renderGeometry(gridSlice)
-    
+    BH1InitalLoc=utils.BHCoordsToOctree(BHCoords=[-4.0,0,0],maxDepth=12,BHBounds=[-200.0,200.0])
+    BH2InitalLoc=utils.BHCoordsToOctree(BHCoords=[4.0,0,0],maxDepth=12,BHBounds=[-200.0,200.0])
+    if(rank==0):
+        print [BH1InitalLoc,BH2InitalLoc]
+    BH_Loc=filters.ExtractBHLocations(pvtuReader,BH1PrevLoc=BH1InitalLoc,BH2PrevLoc=BH2InitalLoc)
+    if(rank==0):
+         print (BH_Loc)
 
 
 if __name__ == "__main__":
