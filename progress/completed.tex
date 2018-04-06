@@ -1,6 +1,167 @@
-We are currently on schedule for completing our project and haven't run into any major snags. What we have completed up this point are
+%We are currently on schedule for completing our project and haven't run into any major snags. What we have completed up this point are
+%
+%\begin{itemize}
+%	\item \textbf{ParaView parallel rendering script.} We can currently render images and video using a parallel ParaView rendering script which we have used to generate a number of visualizations. 
+%	\item \textbf{VTK Python parallel rendering script.} We have also completed a Python VTK parallel rendering script that can now be used to recreate the visualizations from the ParaView script.
+%\end{itemize}
 
+\section{Data}
+The PDEs are discretized in both space and time, and we are marching in time computing how the solution evolves through time. Hence the data is time dependent. Dendro uses \texttt{.pvtu} file format to write the solution at a given time step. The \texttt{.pvtu} file format specifies the partitioned unstructured grids where it contains information such as number of partitions and file names of those partitions in order to facilitate parallel rendering of the data. Each partition is in \texttt{.vtu} file format written in binary format with compression enabled. An example \texttt{.pvtu} file is given below which list of variables written and file name for each partition (i.e. \texttt{.vtu} files). 
+\begin{lstlisting}[language=Xml,basicstyle=\tiny]
+    <?xml version="1.0"?>
+    <VTKFile type="PUnstructuredGrid" version="0.1" byte_order="LittleEndian">
+    <PUnstructuredGrid GhostLevel="0">
+    <PFieldData>
+    <PDataArray type="Float32" Name="Time" format="ascii"/>
+    <PDataArray type="Float32" Name="Cycle" format="ascii"/>
+    </PFieldData>
+    <PPoints>
+    <PDataArray type="UInt32" Name="Position" NumberOfComponents="3" format="binary"/>
+    </PPoints>
+    <PCellData>
+    <PDataArray type="UInt32" Name="mpi_rank" format="binary"/>
+    <PDataArray type="UInt32" Name="cell_level" format="binary"/>
+    </PCellData>
+    <PPointData>
+    <PDataArray type="Float64" Name="U_ALPHA" format="binary"/>
+    <PDataArray type="Float64" Name="U_CHI" format="binary"/>
+    <PDataArray type="Float64" Name="U_K" format="binary"/>
+    <PDataArray type="Float64" Name="U_GT0" format="binary"/>
+    <PDataArray type="Float64" Name="U_GT1" format="binary"/>
+    <PDataArray type="Float64" Name="U_GT2" format="binary"/>
+    <PDataArray type="Float64" Name="U_BETA0" format="binary"/>
+    <PDataArray type="Float64" Name="U_BETA1" format="binary"/>
+    <PDataArray type="Float64" Name="U_BETA2" format="binary"/>
+    <PDataArray type="Float64" Name="U_B0" format="binary"/>
+    <PDataArray type="Float64" Name="U_B1" format="binary"/>
+    <PDataArray type="Float64" Name="U_B2" format="binary"/>
+    <PDataArray type="Float64" Name="U_SYMGT0" format="binary"/>
+    <PDataArray type="Float64" Name="U_SYMGT1" format="binary"/>
+    <PDataArray type="Float64" Name="U_SYMGT2" format="binary"/>
+    <PDataArray type="Float64" Name="U_SYMGT3" format="binary"/>
+    <PDataArray type="Float64" Name="U_SYMGT4" format="binary"/>
+    <PDataArray type="Float64" Name="U_SYMGT5" format="binary"/>
+    <PDataArray type="Float64" Name="U_SYMAT0" format="binary"/>
+    <PDataArray type="Float64" Name="U_SYMAT1" format="binary"/>
+    <PDataArray type="Float64" Name="U_SYMAT2" format="binary"/>
+    <PDataArray type="Float64" Name="U_SYMAT3" format="binary"/>
+    <PDataArray type="Float64" Name="U_SYMAT4" format="binary"/>
+    <PDataArray type="Float64" Name="U_SYMAT5" format="binary"/>
+    </PPointData>
+    <Piece Source="bssn_gr_0_0_16.vtu"/>
+    <Piece Source="bssn_gr_0_1_16.vtu"/>
+    <Piece Source="bssn_gr_0_2_16.vtu"/>
+    <Piece Source="bssn_gr_0_3_16.vtu"/>
+    <Piece Source="bssn_gr_0_4_16.vtu"/>
+    <Piece Source="bssn_gr_0_5_16.vtu"/>
+    <Piece Source="bssn_gr_0_6_16.vtu"/>
+    <Piece Source="bssn_gr_0_7_16.vtu"/>
+    <Piece Source="bssn_gr_0_8_16.vtu"/>
+    <Piece Source="bssn_gr_0_9_16.vtu"/>
+    <Piece Source="bssn_gr_0_10_16.vtu"/>
+    <Piece Source="bssn_gr_0_11_16.vtu"/>
+    <Piece Source="bssn_gr_0_12_16.vtu"/>
+    <Piece Source="bssn_gr_0_13_16.vtu"/>
+    <Piece Source="bssn_gr_0_14_16.vtu"/>
+    <Piece Source="bssn_gr_0_15_16.vtu"/>
+    </PUnstructuredGrid>
+    </VTKFile> 
+    \end{lstlisting}
+    
+
+\section{Paraview interactive based visualization}
+When dealing with large scale simulation data, it might be inefficient to use Paraview client based visualization. One approch to visualize large scale data interactively is to run paraview in \texttt{client-server} mode. 
+In \texttt{client-server} mode we can launch paraview server (\texttt{pvserver}) using \texttt{MPI} and connect to that server through paraview client. Above approach might be little hard to setup, and you need to run \texttt{pvserver} in 
+exisiting supercomputer compute nodes, which cost critical amount of core hours. We have performed interactive \texttt{client-server} visualization in Utah's CHPC cluster. 
+
+\section{Paraview batch mode based visualization}
+Paraview batch mode visualization is same as the above \texttt{client-server} visualization except we use paraview python wrapper to write code to generate specific views, and save images for each time step. This approach does not require 
+Paraview GUI (i.e. all the pipeline setup is performed throught paraview python wrapper), and we can use configure flags to run paraview in \texttt{offscreen-rendering} mode, hence easy to setup. In order to run paraview in batch mode, 
+we can use \texttt{pvbatch} which automatically does the client server setup based on the number of \texttt{MPI} tasks specified. For example if you want to run paraview in $280$ cores in $10$ nodes in CHPC you can request $10$
+compute nodes and launch the batch with offscreen rendering as follows. 
+
+\begin{lstlisting}[basicstyle=\small]
+mpirun -np 280 -N 28 pvbatch --use-offscreen-rendering <paraview python script>
+\end{lstlisting}
+
+For the paraview batch mode based visualization we have generated $4$ images for each timestep for black hole merger simulation of mass ratios $1,10$ and $100$. 
 \begin{itemize}
-	\item \textbf{ParaView parallel rendering script.} We can currently render images and video using a parallel ParaView rendering script which we have used to generate a number of visualizations. 
-	\item \textbf{VTK Python parallel rendering script.} We have also completed a Python VTK parallel rendering script that can now be used to recreate the visualizations from the ParaView script.
+    \item Compute a slice through the black hole plane and color them by the BSSN variable $\chi$
+    \item Visualise the same slice with the underling AMR mesh structure (i.e. refinement level) $cell\_level$    
+    \item Compute warp by scalr based on $\chi$ with scale factor of $100$ in $(0,0,1)$ direction
+    \item Visualise the warped slice with the underling grid structure. 
 \end{itemize}
+
+Above simulations are mainly interesting since BSSN variable $\chi$ can be use to identify the each singularity in spacetime, and cell structure is important to check the Adaptive Mesh Refinement (AMR) is functioning properly. Few of the generated
+images are shown in Figures \ref{fig:pv:r1},\ref{fig:pv:r10} and \ref{fig:pv:r100} 
+
+\newpage
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.22\textwidth]{figs/paraview/r1/img_slice_000200.png}
+    \includegraphics[width=0.22\textwidth]{figs/paraview/r1/img_slice_level_000200.png}
+    \includegraphics[width=0.22\textwidth]{figs/paraview/r1/img_slice_wbs_000200.png}
+    \includegraphics[width=0.22\textwidth]{figs/paraview/r1/img_slice_level_wbs_000200.png}
+    \caption{Equal mass ratio black hole merger simulation with maximum refinement level of $12$ with wavelet tolerance of $10^{-4}$ perfomred in CHPC \label{fig:pv:r1}}
+\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.22\textwidth]{figs/paraview/r10/img_slice_000050.png}
+    \includegraphics[width=0.22\textwidth]{figs/paraview/r10/img_slice_level_000050.png}
+    \includegraphics[width=0.22\textwidth]{figs/paraview/r10/img_slice_wbs_000050.png}
+    \includegraphics[width=0.22\textwidth]{figs/paraview/r10/img_slice_level_wbs_000050.png}
+    \caption{Mass ratio of 10 black hole merger simulation with maximum refinement level of $12$ with wavelet tolerance of $10^{-4}$ perfomred in CHPC \label{fig:pv:r10}}
+\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.22\textwidth]{figs/paraview/r100/img_slice_000050.png}
+    \includegraphics[width=0.22\textwidth]{figs/paraview/r100/img_slice_level_000050.png}
+    \includegraphics[width=0.22\textwidth]{figs/paraview/r100/img_slice_wbs_000050.png}
+    \includegraphics[width=0.22\textwidth]{figs/paraview/r100/img_slice_level_wbs_000050.png}
+    \caption{Mass ratio of 100 black hole merger simulation with maximum refinement level of $12$ with wavelet tolerance of $10^{-4}$ perfomred in CHPC \label{fig:pv:r100}}
+\end{figure}
+
+
+We will provide the final version of the paraview python script (\texttt{bssnVis.py}) for the project eavluation. We believe that the paraview bacth mode based visualization almost finished but new filters and pipelines can be setup as needed.
+Note that we can use paraview trace mode to generate the basic code structures for new filters and modify them as needed. 
+
+\section{VTK based visualization }
+Visualization ToolKit (VTK) is one of the most powerful, scalable visualization package that is mainly developed by KitWare and Sandia National Laboratory. Paraview is a GUI which is build upon VTK, Paraview does have almost the basic functions, 
+in VTK but there are some VTK functionalities that is not present in paraview (i.e. Gradient Opacity Transfer functions). VTK is primaraly supports in C/C++ there are some wrappers for other languages such as python tcl etc. In the VTK based visualization 
+we are trying to performn the same visualizations that we have done using paraview in parallel rendering mode. We believe this is give us deeper understanding of paraview workflow and pipeline. 
+
+VTK has different readers for each file format. Parallel processing and rendering capability will depend on the file format the data is written. All the file formats which are written in partioned data format can be parallely process (i.e. reading, applying filters etc. )
+and can be parallelly rendered using VTK CompositeManger. 
+
+In order to read \texttt{.pvtu} files we use, \texttt{vtkXMLPUnstructuredGridReader} which performs the parallel processing internally transparent to the user. Reading the \texttt{.pvtu} file can be done as follows. 
+\begin{lstlisting}[basicstyle=\small]
+''
+@brief Reads the XML partioned unstructed 
+grid and retuns, vtkXMLPUnstructuredGridReader
+'''
+def ReadPVTUFile(fname):
+    reader=vtk.vtkXMLPUnstructuredGridReader()
+    reader.SetFileName(fname)
+    reader.Update()
+    #print reader.GetNumberOfPieces()
+    return reader
+\end{lstlisting}
+
+In order to benifit from the parallelism we need to run VTK using MPI, this can be performed using \texttt{MPI4Py} and \texttt{pvtkpython} which enables us to run the VTK is distributed mode as follows.
+\begin{lstlisting}[basicstyle=\small]
+    mpirun -np 8 pvtkpython <VTK script>
+\end{lstlisting} 
+
+At this point we have perfomed slice through the data and visualize the BSSN variable $\chi$ over the slice, an generated figure is shown in Figure \ref{fig:vtk:r1}. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.2\textwidth]{figs/vtk/r1/img_slice_000000.png}
+    \caption{VTK based generated image for the equal mass ratio black holes with maxdepth of $12$ and wavelet tolerance of $10^{-4}$ \label{fig:vtk:r1}}
+\end{figure}
+
