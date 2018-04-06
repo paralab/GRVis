@@ -33,7 +33,7 @@ def SaveScreenShot(renderWindow,fileName):
     pngWriter.SetFileName(fileName)
     pngWriter.SetInputConnection(windowToImageFilter.GetOutputPort())
     pngWriter.Write()
-    print "image written"
+    print("image written")
 
 
 
@@ -60,8 +60,8 @@ def ParallelRenderGeometry(source,windowSize=[300,300],backgroundColor=[0,0,0],v
 
 
     # create custom light 
-    lightPosition=[0,0,1]
-    lightFocalPoint=[0,0,0]
+    lightPosition=[2048,2048,3096]
+    lightFocalPoint=[2048,2048,2048]
 
     light=vtk.vtkLight()
     light.SetLightTypeToSceneLight()
@@ -78,7 +78,7 @@ def ParallelRenderGeometry(source,windowSize=[300,300],backgroundColor=[0,0,0],v
 
     # create camera
     camera =vtk.vtkCamera()
-    camera.SetPosition(2048,2048,1048)
+    camera.SetPosition(2048,0,3096)
     camera.SetFocalPoint(2048,2048,2048)
 
 

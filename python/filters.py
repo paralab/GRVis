@@ -19,7 +19,7 @@ from mpi4py import MPI
 compute the slice of the octree. 
 '''
 
-def SliceFilter(source,genScalars=True,genTriangles=False):
+def SliceFilter(source,genScalars=False,genTriangles=False):
 
     plane=vtk.vtkPlane()
     plane.SetOrigin(2048,2048,2048)
@@ -61,10 +61,10 @@ def ComputeScalarRange(source,varName):
 '''
 warp by scalar
 '''
-def WarpByScalar(source,varName):
+def WarpByScalar(source,varName,scaleFactor=10.0):
     warpByScalar=vtk.vtkWarpScalar()
     warpByScalar.SetInputConnection(source.GetOutputPort())
-    warpByScalar.SetScaleFactor(100); #use the scalars themselves
+    warpByScalar.SetScaleFactor(scaleFactor); #use the scalars themselves
     warpByScalar.UseNormalOn();
     warpByScalar.SetNormal(0, 0, 1);
     warpByScalar.Update()
