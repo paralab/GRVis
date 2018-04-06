@@ -183,3 +183,96 @@ def ParallelRenderGeometry(source,windowSize=[300,300],backgroundColor=[0,0,0],v
     ExitMaster(0,0)
     return 
 
+
+'''
+performs volume rendering. 
+'''
+
+def VolumeRender(source,windowSize=[300,300],backgroundColor=[0,0,0],varName=''):
+    if varName=='':
+        print ('specify a variable name to perform volume rendering')
+        sys.exit()
+    scalar_range=filters.ComputeScalarRange(source,varName)        
+    OTFunction=vtk.vtkPiecewiseFunction() # initialize opacity transfer function
+    opacity_range=[0.0,1.0] # opacity range is used the generate the OTF. 
+    numOTFPoints=20
+    
+    OTFunction.AddPoint(scalar_range[0],opacity_range[1])
+    OTFunction.AddPoint(scalar_range[1],opacity_range[0])
+
+    CTFunction=vtk.vtkColorTransferFunction()
+    CTFunction.AddRGBPoint(0.0,   0.0,0.0,0.0)
+    CTFunction.AddRGBPoint(64.0,  1.0,0.0,0.0)
+    CTFunction.AddRGBPoint(128.0, 0.0,0.0,1.0)
+    CTFunction.AddRGBPoint(192.0, 0.0,1.0,0.0)
+    CTFunction.AddRGBPoint(255.0, 0.0,0.2,0.0)
+
+    GOTFFuntion = vtk.vtkPiecewiseFunction() # gradient opacity funtion
+    GOTFFuntion.AddPoint(0,   0.0)
+    GOTFFuntion.AddPoint(90,  0.5)
+    GOTFFuntion.AddPoint(100, 1.0)
+
+
+    volumeProperty=vtk.vtkVolumeProperty()
+    volumeProperty.SetColor(CTFunction)
+    volumeProperty.SetScalarOpacity(OTFunction)
+    volumeProperty.SetGradientOpacity(GOTFFuntion)
+    volumeProperty.SetInterpolationTypeToLinear()
+    volumeProperty.ShadeOn()
+    volumeProperty.SetAmbient(0.4)
+    volumeProperty.SetDiffuse(0.6)
+    volumeProperty.SetSpecular(0.2)
+
+    compositeFunction =vtk.vtkVolumeRayCastCompositeFunction()
+    volumeMapper = vtk.vtkVolumeRayCastMapper()
+    volumeMapper.SetVolumeRayCastFunction(compositeFunction)
+    volumeMapper.SetInputConnection(source.GetOutputPort())
+    #volumeMapper.SetBlendModeToComposite()
+
+    volume = vtk.vtkVolume()
+    volume.SetMapper(volumeMapper)
+    volume.SetProperty(volumeProperty)
+
+    ren = vtk.vtkRenderer()
+    renWin = vtk.vtkRenderWindow()
+    renWin.AddRenderer(ren)
+    iren = vtk.vtkRenderWindowInteractor()
+    iren.SetRenderWindow(renWin)
+
+
+    # Finally, add the volume to the renderer
+    ren.AddViewProp(volume)
+    
+    # Set up an initial view of the volume.  The focal point will be the
+    # center of the volume, and the camera position will be 400mm to the
+    
+    camera =  ren.GetActiveCamera()
+    c = volume.GetCenter()
+    camera.SetFocalPoint(c[0], c[1], c[2])
+    camera.SetPosition(c[0] + 400, c[1], c[2])
+    camera.SetViewUp(0, 0, -1)
+    
+    # Increase the size of the render window
+    renWin.SetSize(windowSize[0],windowSize[1])
+    
+    # Interact with the data.
+    iren.Initialize()
+    renWin.Render()
+    iren.Start()
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+

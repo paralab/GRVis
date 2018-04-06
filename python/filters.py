@@ -70,6 +70,12 @@ def WarpByScalar(source,varName):
     warpByScalar.Update()
     return warpByScalar
 
+
+'''
+Generate Diverging color scheme with RGB1 and RGB2.
+
+'''
+
 def GenerateDivergingColorMap(RGB1=[0,0,1],RGB2=[1,0,0],numColors=256):
     lut = vtk.vtkLookupTable()
     lut.SetNumberOfTableValues(numColors)
@@ -83,3 +89,7 @@ def GenerateDivergingColorMap(RGB1=[0,0,1],RGB2=[1,0,0],numColors=256):
         cc = ctf.GetColor(ss)
         lut.SetTableValue(ii,cc[0],cc[1],cc[2],1.0)
     return lut
+
+
+
+
