@@ -60,7 +60,7 @@ def ParallelRenderGeometry(source,windowSize=[300,300],backgroundColor=[0,0,0],v
 
 
     # create custom light 
-    lightPosition=[2048,2048,3096]
+    lightPosition=[2048,2048,0]
     lightFocalPoint=[2048,2048,2048]
 
     light=vtk.vtkLight()
@@ -78,15 +78,14 @@ def ParallelRenderGeometry(source,windowSize=[300,300],backgroundColor=[0,0,0],v
 
     # create camera
     camera =vtk.vtkCamera()
-    camera.SetPosition(2048,0,3096)
+    camera.SetPosition(2048,2048,3092)
     camera.SetFocalPoint(2048,2048,2048)
 
 
     # Create the Renderer
     renderer = vtk.vtkRenderer()
     renderer.AddViewProp(lightActor) # add light
-    renderer.SetActiveCamera(camera) # set the camera
-    
+    renderer.SetActiveCamera(camera) # set the camera    
     
     mapper = vtk.vtkPolyDataMapper()
     mapper.SetInputConnection(surfaceFilter.GetOutputPort())
@@ -138,6 +137,8 @@ def ParallelRenderGeometry(source,windowSize=[300,300],backgroundColor=[0,0,0],v
      
     # Create the RendererWindow
     renderer_window = vtk.vtkRenderWindow()
+    #if saveImage:
+    #    renderer_window.SetOffScreenRendering(1)
     renderer_window.AddRenderer(renderer)
     renderer_window.SetWindowName("render view of %d" % rank)
     renderer_window.SetSize(windowSize)
@@ -159,6 +160,7 @@ def ParallelRenderGeometry(source,windowSize=[300,300],backgroundColor=[0,0,0],v
 
     if rank == 0:
         if saveImage:
+            renderer.ResetCamera()
             renderer_window.Render()
             SaveScreenShot(renderer_window,imageName)
         else:
