@@ -1,0 +1,63 @@
+\subsection{Data}
+The PDEs are discretized in both space and time, and we are marching in time computing how the solution evolves through time. Hence the data is time dependent. Dendro uses \texttt{.pvtu} file format to write the solution at a given time step. The \texttt{.pvtu} file format specifies the partitioned unstructured grids where it contains information such as number of partitions and file names of those partitions in order to facilitate parallel rendering of the data. Each partition is in \texttt{.vtu} file format written in binary format with compression enabled. An example \texttt{.pvtu} file is given below which list of variables written and file name for each partition (i.e. \texttt{.vtu} files). 
+
+\begin{lstlisting}[basicstyle=\small]
+<?xml version="1.0"?>
+<VTKFile type="PUnstructuredGrid" version="0.1" byte_order="LittleEndian">
+<PUnstructuredGrid GhostLevel="0">
+<PFieldData>
+<PDataArray type="Float32" Name="Time" format="ascii"/>
+<PDataArray type="Float32" Name="Cycle" format="ascii"/>
+</PFieldData>
+<PPoints>
+<PDataArray type="UInt32" Name="Position" NumberOfComponents="3" format="binary"/>
+</PPoints>
+<PCellData>
+<PDataArray type="UInt32" Name="mpi_rank" format="binary"/>
+<PDataArray type="UInt32" Name="cell_level" format="binary"/>
+</PCellData>
+<PPointData>
+<PDataArray type="Float64" Name="U_ALPHA" format="binary"/>
+<PDataArray type="Float64" Name="U_CHI" format="binary"/>
+<PDataArray type="Float64" Name="U_K" format="binary"/>
+<PDataArray type="Float64" Name="U_GT0" format="binary"/>
+<PDataArray type="Float64" Name="U_GT1" format="binary"/>
+<PDataArray type="Float64" Name="U_GT2" format="binary"/>
+<PDataArray type="Float64" Name="U_BETA0" format="binary"/>
+<PDataArray type="Float64" Name="U_BETA1" format="binary"/>
+<PDataArray type="Float64" Name="U_BETA2" format="binary"/>
+<PDataArray type="Float64" Name="U_B0" format="binary"/>
+<PDataArray type="Float64" Name="U_B1" format="binary"/>
+<PDataArray type="Float64" Name="U_B2" format="binary"/>
+<PDataArray type="Float64" Name="U_SYMGT0" format="binary"/>
+<PDataArray type="Float64" Name="U_SYMGT1" format="binary"/>
+<PDataArray type="Float64" Name="U_SYMGT2" format="binary"/>
+<PDataArray type="Float64" Name="U_SYMGT3" format="binary"/>
+<PDataArray type="Float64" Name="U_SYMGT4" format="binary"/>
+<PDataArray type="Float64" Name="U_SYMGT5" format="binary"/>
+<PDataArray type="Float64" Name="U_SYMAT0" format="binary"/>
+<PDataArray type="Float64" Name="U_SYMAT1" format="binary"/>
+<PDataArray type="Float64" Name="U_SYMAT2" format="binary"/>
+<PDataArray type="Float64" Name="U_SYMAT3" format="binary"/>
+<PDataArray type="Float64" Name="U_SYMAT4" format="binary"/>
+<PDataArray type="Float64" Name="U_SYMAT5" format="binary"/>
+</PPointData>
+<Piece Source="bssn_gr_0_0_16.vtu"/>
+<Piece Source="bssn_gr_0_1_16.vtu"/>
+<Piece Source="bssn_gr_0_2_16.vtu"/>
+<Piece Source="bssn_gr_0_3_16.vtu"/>
+<Piece Source="bssn_gr_0_4_16.vtu"/>
+<Piece Source="bssn_gr_0_5_16.vtu"/>
+<Piece Source="bssn_gr_0_6_16.vtu"/>
+<Piece Source="bssn_gr_0_7_16.vtu"/>
+<Piece Source="bssn_gr_0_8_16.vtu"/>
+<Piece Source="bssn_gr_0_9_16.vtu"/>
+<Piece Source="bssn_gr_0_10_16.vtu"/>
+<Piece Source="bssn_gr_0_11_16.vtu"/>
+<Piece Source="bssn_gr_0_12_16.vtu"/>
+<Piece Source="bssn_gr_0_13_16.vtu"/>
+<Piece Source="bssn_gr_0_14_16.vtu"/>
+<Piece Source="bssn_gr_0_15_16.vtu"/>
+</PUnstructuredGrid>
+</VTKFile> 
+\end{lstlisting}

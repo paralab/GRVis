@@ -1,0 +1,95 @@
+\subsection{Paraview interactive based visualization}
+When dealing with large scale simulation data, it might be inefficient to use Paraview client based visualization. One approach to visualize large scale data interactively is to run paraview in \texttt{client-server} mode. 
+In \texttt{client-server} mode we can launch ParaView server (\texttt{pvserver}) using \texttt{MPI} and connect to that server through ParaView client. Above approach might be little hard to setup, and you need to run \texttt{pvserver} in 
+exisiting supercomputer compute nodes, which cost critical amount of core hours. We have performed interactive \texttt{client-server} visualization in Utah's CHPC cluster. 
+
+\subsection{Paraview batch mode based visualization}
+ParaView batch mode visualization is same as the above \texttt{client-server} visualization except we use ParaView python wrapper to write code to generate specific views, and save images for each time step. This approach does not require 
+ParaView GUI (i.e. all the pipeline setup is performed through ParaView python wrapper), and we can use configure flags to run ParaView in \texttt{offscreen-rendering} mode, hence easy to setup. In order to run ParaView in batch mode, 
+we can use \texttt{pvbatch} which automatically does the client server setup based on the number of \texttt{MPI} tasks specified. For example if you want to run ParaView in $280$ cores in $10$ nodes in CHPC you can request $10$
+compute nodes and launch the batch with offscreen rendering as follows. 
+
+\begin{lstlisting}[basicstyle=\small]
+mpirun -np 280 -N 28 pvbatch --use-offscreen-rendering <paraview python script>
+\end{lstlisting}
+
+For the ParaView batch mode based visualization we have generated $4$ images for each timestep for black hole merger simulation of mass ratios $1,10$ and $100$. 
+\begin{itemize}
+    \item Compute a slice through the black hole plane and color them by the BSSN variable $\chi$
+    \item Visualize the same slice with the underling AMR mesh structure (i.e. refinement level) $cell\_level$    
+    \item Compute warp by scalr based on $\chi$ with scale factor of $100$ in $(0,0,1)$ direction
+    \item Visualize the warped slice with the underling grid structure. 
+\end{itemize}
+
+Above simulations are mainly interesting since BSSN variable $\chi$ can be use to identify the each singularity in spacetime, and cell structure is important to check the Adaptive Mesh Refinement (AMR) is functioning properly. Few of the generated
+images are shown in Figures \ref{fig:pv:r1},\ref{fig:pv:r10} and \ref{fig:pv:r100} 
+
+\newpage
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.22\textwidth]{figs/paraview/r1/img_slice_000200.png}
+    \includegraphics[width=0.22\textwidth]{figs/paraview/r1/img_slice_level_000200.png}
+    \includegraphics[width=0.22\textwidth]{figs/paraview/r1/img_slice_wbs_000200.png}
+    \includegraphics[width=0.22\textwidth]{figs/paraview/r1/img_slice_level_wbs_000200.png}
+    \caption{Equal mass ratio black hole merger simulation with maximum refinement level of $12$ with wavelet tolerance of $10^{-4}$ perfomred in CHPC \label{fig:pv:r1}}
+\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.22\textwidth]{figs/paraview/r10/img_slice_000050.png}
+    \includegraphics[width=0.22\textwidth]{figs/paraview/r10/img_slice_level_000050.png}
+    \includegraphics[width=0.22\textwidth]{figs/paraview/r10/img_slice_wbs_000050.png}
+    \includegraphics[width=0.22\textwidth]{figs/paraview/r10/img_slice_level_wbs_000050.png}
+    \caption{Mass ratio of 10 black hole merger simulation with maximum refinement level of $12$ with wavelet tolerance of $10^{-4}$ perfomred in CHPC \label{fig:pv:r10}}
+\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.22\textwidth]{figs/paraview/r100/img_slice_000050.png}
+    \includegraphics[width=0.22\textwidth]{figs/paraview/r100/img_slice_level_000050.png}
+    \includegraphics[width=0.22\textwidth]{figs/paraview/r100/img_slice_wbs_000050.png}
+    \includegraphics[width=0.22\textwidth]{figs/paraview/r100/img_slice_level_wbs_000050.png}
+    \caption{Mass ratio of 100 black hole merger simulation with maximum refinement level of $12$ with wavelet tolerance of $10^{-4}$ perfomred in CHPC \label{fig:pv:r100}}
+\end{figure}
+
+
+We will provide the final version of the ParaView python script (\texttt{bssnVis.py}) for the project evaluation. We believe that the ParaView batch mode based visualization almost finished but new filters and pipelines can be setup as needed.
+Note that we can use paraview trace mode to generate the basic code structures for new filters and modify them as needed. 
+
+\subsection{VTK based visualization }
+Visualization ToolKit (VTK) is one of the most powerful, scalable visualization package that is mainly developed by KitWare and Sandia National Laboratory. ParaView is a GUI which is build upon VTK, ParaView does have almost the basic functions, 
+in VTK but there are some VTK functionalities that is not present in ParaView (i.e. Gradient Opacity Transfer functions). VTK is primarily supports in C/C++ there are some wrappers for other languages such as python tcl etc. In the VTK based visualization 
+we are trying to perform the same visualizations that we have done using ParaView in parallel rendering mode. We believe this is give us deeper understanding of ParaView workflow and pipeline. 
+
+VTK has different readers for each file format. Parallel processing and rendering capability will depend on the file format the data is written. All the file formats which are written in partioned data format can be processed in parallel (i.e. reading, applying filters etc. )
+and can be rendered using VTK CompositeManger in parallel. 
+
+In order to read \texttt{.pvtu} files we use, \texttt{vtkXMLPUnstructuredGridReader} which performs the parallel processing internally transparent to the user. Reading the \texttt{.pvtu} file can be done as follows. 
+\begin{lstlisting}[basicstyle=\small]
+''
+@brief Reads the XML partioned unstructed 
+grid and retuns, vtkXMLPUnstructuredGridReader
+'''
+def ReadPVTUFile(fname):
+reader=vtk.vtkXMLPUnstructuredGridReader()
+reader.SetFileName(fname)
+reader.Update()
+#print reader.GetNumberOfPieces()
+return reader
+\end{lstlisting}
+
+In order to benefit from the parallelism we need to run VTK using MPI, this can be performed using \texttt{MPI4Py} and \texttt{pvtkpython} which enables us to run the VTK in distributed mode as follows.
+\begin{lstlisting}[basicstyle=\small]
+mpirun -np 8 pvtkpython <VTK script>
+\end{lstlisting} 
+
+At this point we have performed slice through the data and visualize the BSSN variable $\chi$ over the slice, an generated figure is shown in Figure \ref{fig:vtk:r1}. 
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.2\textwidth]{figs/vtk/r1/img_slice_000000.png}
+	\caption{VTK based generated image for the equal mass ratio black holes with maxdepth of $12$ and wavelet tolerance of $10^{-4}$ \label{fig:vtk:r1}}
+	\end{figure}
