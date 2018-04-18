@@ -60,8 +60,8 @@ def ParallelRenderGeometry(source,windowSize=[300,300],backgroundColor=[0,0,0],v
 
 
     # create custom light 
-    lightPosition=[2048,2048,0]
-    lightFocalPoint=[2048,2048,2048]
+    lightPosition=[0,0,1]
+    lightFocalPoint=[0,0,0]
 
     light=vtk.vtkLight()
     light.SetLightTypeToSceneLight()
@@ -78,7 +78,7 @@ def ParallelRenderGeometry(source,windowSize=[300,300],backgroundColor=[0,0,0],v
 
     # create camera
     camera =vtk.vtkCamera()
-    camera.SetPosition(2048,2048,3092)
+    camera.SetPosition(2048,2048,3048)
     camera.SetFocalPoint(2048,2048,2048)
 
 
@@ -129,6 +129,7 @@ def ParallelRenderGeometry(source,windowSize=[300,300],backgroundColor=[0,0,0],v
     # Create the Actor
     actor = vtk.vtkActor()
     actor.SetMapper(mapper)
+    #actor.GetProperty().EdgeVisibilityOn()
     
     renderer.AddActor(actor)
     #renderer.AddActor2D(colormap)
@@ -160,7 +161,7 @@ def ParallelRenderGeometry(source,windowSize=[300,300],backgroundColor=[0,0,0],v
 
     if rank == 0:
         if saveImage:
-            renderer.ResetCamera()
+            #renderer.ResetCamera()
             renderer_window.Render()
             SaveScreenShot(renderer_window,imageName)
         else:

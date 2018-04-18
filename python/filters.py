@@ -20,11 +20,11 @@ import numpy as np
 compute the slice of the octree. 
 '''
 
-def SliceFilter(source,genScalars=False,genTriangles=False):
+def SliceFilter(source,genScalars=False,genTriangles=False,origin=[2048,2048,2048],normal=[0,0,1]):
 
     plane=vtk.vtkPlane()
-    plane.SetOrigin(2048,2048,2048)
-    plane.SetNormal(0,0,1)
+    plane.SetOrigin(origin[0],origin[1],origin[2])
+    plane.SetNormal(normal[0],normal[1],normal[2])
 
     #create cutter
     cutter=vtk.vtkCutter()
@@ -38,11 +38,11 @@ def SliceFilter(source,genScalars=False,genTriangles=False):
         cutter.GenerateCutScalarsOff()
     
     #genTriangles on compute the triangular mesh on the slice
-    '''
-    if genTriangles:
+    
+    '''if genTriangles:
         cutter.GenerateTrianglesOn()
     else:
-        cutter.GenerateTrianglesOn()
+        cutter.GenerateTrianglesOff()
     '''
     cutter.Update()
     
