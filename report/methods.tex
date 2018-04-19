@@ -13,7 +13,7 @@ compute nodes and launch the batch with offscreen rendering as follows.
 mpirun -np 280 -N 28 pvbatch --use-offscreen-rendering <paraview python script>
 \end{lstlisting}
 
-Following are the main parts for the praview python script. The reading the \texttt{.pvtu} can be performed as following. 
+Following are the main parts for the ParaView python script. The reading the \texttt{.pvtu} can be performed as following. 
 
 \begin{lstlisting}[basicstyle=\small]
 filename=[file_prefix+'_'+str(step)+'.pvtu']
@@ -101,18 +101,18 @@ saveImg(file_prefix,img_prefix,step,imgCount)
 imgCount=imgCount+1;
 \end{lstlisting}
 
-Note that in paraview \texttt{XMLPartitionedUnstructuredGridReader} by construction is desined to use parallel processing for generate filters and parallel rendering. 
+Note that in paraview \texttt{XMLPartitionedUnstructuredGridReader} by construction is designed to use parallel processing to generate filters and for parallel rendering. 
 
 
 For the ParaView batch mode based visualization we have generated $4$ images for each timestep for black hole merger simulation of mass ratios $1,10$ and $100$. 
 \begin{itemize}
     \item Compute a slice through the black hole plane and color them by the BSSN variable $\chi$
-    \item Visualize the same slice with the underling AMR mesh structure (i.e. refinement level) $cell\_level$    
-    \item Compute warp by scalr based on $\chi$ with scale factor of $100$ in $(0,0,1)$ direction
+    \item Visualize the same slice with the underlying AMR mesh structure (i.e. refinement level) $cell\_level$    
+    \item Compute warp by scalar based on $\chi$ with scale factor of $100$ in $(0,0,1)$ direction
     \item Visualize the warped slice with the underling grid structure. 
 \end{itemize}
 
-Above simulations are mainly interesting since BSSN variable $\chi$ can be use to identify the each singularity in spacetime, and cell structure is important to check the Adaptive Mesh Refinement (AMR) is functioning properly. Few of the generated
+Above simulations are mainly interesting since BSSN variable $\chi$ can be used to identify each singularity in spacetime, and cell structure is important to check that the Adaptive Mesh Refinement (AMR) is functioning properly. A few of the generated
 images are shown in Figures \ref{fig:pv:r1},\ref{fig:pv:r10} and \ref{fig:pv:r100} 
 
 \begin{figure}[H]
@@ -172,7 +172,7 @@ Note that we can use paraview trace mode to generate the basic code structures f
 
 \subsection{VTK based visualization }
 Visualization ToolKit (VTK) is one of the most powerful, scalable visualization package that is mainly developed by KitWare and Sandia National Laboratory. ParaView is a GUI which is build upon VTK, ParaView does have almost the basic functions, 
-in VTK but there are some VTK functionalities that is not present in ParaView (i.e. Gradient Opacity Transfer functions). VTK is primarily supports in C/C++ there are some wrappers for other languages such as python tcl etc. In the VTK based visualization 
+in VTK but there are some VTK functionalities that are not present in ParaView (i.e. Gradient Opacity Transfer functions). VTK is primarily supports in C/C++ there are some wrappers for other languages such as python tcl etc. In the VTK based visualization 
 we are trying to perform the same visualizations that we have done using ParaView in parallel rendering mode. We believe this is give us deeper understanding of ParaView workflow and pipeline. 
 
 VTK based frame work contain four main scripts those are, 
@@ -188,10 +188,10 @@ VTK has different readers for each file format. Parallel processing and renderin
 and can be rendered using VTK CompositeManger in parallel. 
 
 \subsection{Sequential rendering with VTK}
-Compared to paraview based scripting VTK is more primitive and has more flexibility for the programmer. Overall VTK visualization pipeline is you can read input data form VTK supported file format with the corresponding reader. Then user can program required filters which can be passed to the rendering process. Rendering in VTK slightly more complicated compared to paraview since paraview has automated this process for the user. In VTK rendering, first user need to create a \texttt{Mapper} which take some file input connection to known topology mapping to VTK (i.e. map input to polygonal data), and it is reuired that the file is written in the correct format to perform this mapping correctly. Once we have an \texttt{Mapper} we can create an \texttt{Actors} for everything needed to be rendered in the rendering window. We can add multiple actors to renderer and we can create a rendering window using the renderer. 
+Compared to paraview based scripting VTK is more primitive and has more flexibility for the programmer. Overall VTK visualization pipeline is you can read input data form VTK supported file format with the corresponding reader. Then user can program required filters which can be passed to the rendering process. Rendering in VTK slightly more complicated compared to paraview since paraview has automated this process for the user. In VTK rendering, first user need to create a \texttt{Mapper} which take some file input connection to known topology mapping to VTK (i.e. map input to polygonal data), and it is required that the file is written in the correct format to perform this mapping correctly. Once we have a \texttt{Mapper} we can create an \texttt{Actors} for everything needed to be rendered in the rendering window. We can add multiple actors to renderer and we can create a rendering window using the renderer. 
 
 \subsection{Parallel rendering with VTK}
-VTK supports parallel distributed memory rendering which can be essential with dealing with large data sets. In order to perform parallel rendering, we need use, \texttt{vtkCompositeRenderManager} which we can then add multiple render windows and set the primary render window to render the final image. Following is an example of using \texttt{vtkCompositeRenderManager}.
+VTK supports parallel distributed memory rendering which can be essential with dealing with large data sets. In order to perform parallel rendering, we need to use \texttt{vtkCompositeRenderManager} which we can then add multiple render windows and set the primary render window to render the final image. Following is an example of using \texttt{vtkCompositeRenderManager}.
 
 \begin{lstlisting}[language=Python]
 compManager = vtk.vtkCompositeRenderManager()

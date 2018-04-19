@@ -1,0 +1,23 @@
+The initial phase of our project involved writing a ParaView Python script that we ran in parallel on the kingspeak cluster. During this stage of the project we made extensive use of the ParaView documentation that can be found at
+
+\begin{lstlisting}[basicstyle=\small]
+https://www.paraview.org/ParaView/Doc/Nightly/www/py-doc/index.html
+\end{lstlisting}
+
+Then, once the ParaView script was done and working, we started writing the VTK version of the pipeline. This required referencing the VTK documentation extensively to understand the various filters and classes that we would employ in the script. This documentation can be found at
+
+\begin{lstlisting}[basicstyle=\small]
+https://www.vtk.org/doc/nightly/html/index.html
+\end{lstlisting}
+
+In addition to the usual VTK documentation, KitWare provides an excellent selection of example code that came in very handy. There is an entire section on Python examples that provided us with the starting point for each of the tasks our script would be responsible for. This collection can be found at
+
+\begin{lstlisting}[basicstyle=\small]
+https://lorensen.github.io/VTKExamples/site/
+\end{lstlisting}
+
+Finally, in order to understand the data fields resulting from the GR simulation, we referred to the paper “Numerical simulations with a first order BSSN formulation of Einstein’s field equations (2012)”. This paper describes the BSSN formulation used in the simulation and describes the various scalars, vectors, and tensors that show up as data fields in the outupt data. We used this information to direct our high-level efforts in terms of which fields to visualize and what methods would be the best fit. This paper can then be found at
+
+\begin{lstlisting}[basicstyle=\small]
+https://arxiv.org/pdf/1202.1038.pdf
+\end{lstlisting}
