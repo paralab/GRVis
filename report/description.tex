@@ -61,3 +61,17 @@ The PDEs are discretized in both space and time, and we are marching in time com
 </PUnstructuredGrid>
 </VTKFile> 
 \end{lstlisting}
+
+
+\subsection{What to visualize ?}
+The BSSN formulation of Einstein's field equations is coordinate dependent non-linear hyperbolic PDE system, where most of the terms were introduced to make the system numerically stable. Hence most of BSSN variables lack of physical meaning. Hence picking which variables to visualize can be tricky. The $\alpha$ and $\beta_i$ basically represent the $4$ dimensional coordinate system (i.e. $\alpha$ for time and $\beta_i$ for spatial coordinates) that the BSSN equations are defined, and evolved with time. The trivial approach to track the singularities in spacetime is to track of the time coordinate $\alpha$ since time slows down (not defined) near the singularity (at the singularity). Hence we mostly use variable $\chi$ which is directly related with $\alpha$ to visualize the singularities. And we also use the warp by scalar to variable $\chi$ hence it gives more visual perspective of singularities. 
+
+\par Form the computational point of view Dendro uses Wavelet based Adaptive Mesh Refinement (WAMR) to figure out the adaptivity of the underlying mesh. How the mesh refinement changes with the time evolution can also be useful to determine or can be a visual debug tool to determine whether the the WAMR working correctly. 
+
+Based on the above reasoning we decided to visualize the following on the plane of the singularities. 
+
+\begin{itemize}
+\item Variable $\chi$  
+\item Variable $\chi$ with warp by scalar. 
+\item Cell level (i.e. refinement) change with time.
+\end{itemize}
