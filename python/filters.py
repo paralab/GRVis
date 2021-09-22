@@ -1,26 +1,14 @@
-#!/usr/bin/env python
-#####
-### CS6635 - Scientific Visualization Project. VTK based visualization framework for computational relativity. 
-### Author: Milinda Fernando, Max Carlson
-### School of Computing, University of Utah.
-### Date: 04/02/2018
-####
-
-'''
-
-All the filters, and filter helper functions. 
-
-'''
-
+"""
+@package : All the filters, and filter helper functions. 
+"""
 import vtk as vtk
-from mpi4py import MPI
 import numpy as np
 
 '''
 compute the slice of the octree. 
 '''
 
-def SliceFilter(source,genScalars=False,genTriangles=False,origin=[2048,2048,2048],normal=[0,0,1]):
+def SliceFilter(source,genScalars=False,genTriangles=False,origin=[0,0,1e-6],normal=[0,0,1]):
 
     plane=vtk.vtkPlane()
     plane.SetOrigin(origin[0],origin[1],origin[2])

@@ -17,35 +17,54 @@ import render as render
 import filters as filters
 import argparse as argparse
 from mpi4py import MPI
-import utils as utils
+#import utils as utils
 
 
-def saveImgSlice(file_prefix,img_prefix,step,imgCount,window=[400,400]):
+def render_pvtu(file_prefix,img_prefix,step,imgCount,window=[400,400]):
     filename=file_prefix+'_'+str(step)+'.pvtu'
     pvtuReader=vtkio.ReadPVTUFile(filename)
     pvtuReader.GetOutput().GetPointData().SetActiveAttribute("U_CHI", 0)
-    gridSlice=filters.SliceFilter(pvtuReader)
-    imgName=img_prefix+'_slice_'+str(imgCount).zfill(6)+'.png'
-    render.ParallelRenderGeometry(gridSlice,windowSize=window,varName='U_CHI',colorbyScalar=True,scalarBar=True,saveImage=True,imageName=imgName,useParallelRendering=False)
-    warpByScalar=filters.WarpByScalar(gridSlice,'U_CHI',scaleFactor=100)
-    imgName=img_prefix+'_slice_wbs_'+str(imgCount).zfill(6)+'.png'
-    render.ParallelRenderGeometry(warpByScalar,windowSize=window,varName='U_CHI',colorbyScalar=True,scalarBar=True,saveImage=True,imageName=imgName,useParallelRendering=False)
-    #imgName=img_prefix+'_slice_level_wbs'+str(imgCount).zfill(6)+'.png'
-    #render.ParallelRenderGeometry(warpByScalar,windowSize=window,varName='cell_level',colorbyScalar=True,scalarBar=True,saveImage=True,imageName=imgName,useParallelRendering=False)
+
+    colors = vtk.vtkNamedColors()
+    output = pvtuReader.GetOutput()
+    # Create the mapper that corresponds the objects of the vtk.vtk file
+    # into graphics elements
+    mapper = vtk.vtkDataSetMapper()
+    mapper.SetInputData(output)
+    # mapper.SetScalarRange(scalar_range)
+    mapper.ScalarVisibilityOff()
+
+    # Create the Actor
+    actor = vtk.vtkActor()
+    actor.SetMapper(mapper)
+    actor.GetProperty().EdgeVisibilityOn()
+    actor.GetProperty().SetLineWidth(2.0)
+    actor.GetProperty().SetColor(colors.GetColor3d("MistyRose"))
+
+    backface = vtk.vtkProperty()
+    backface.SetColor(colors.GetColor3d('Tomato'))
+    actor.SetBackfaceProperty(backface)
+
+    # Create the Renderer
+    renderer = vtk.vtkRenderer()
+    renderer.AddActor(actor)
+    renderer.SetBackground(colors.GetColor3d('Wheat'))
+
+    # Create the RendererWindow
+    renderer_window = vtk.vtkRenderWindow()
+    renderer_window.SetSize(640, 480)
+    renderer_window.AddRenderer(renderer)
+    renderer_window.SetWindowName('ReadUnstructuredGrid')
+
+    # Create the RendererWindowInteractor and display the vtk_file
+    interactor = vtk.vtkRenderWindowInteractor()
+    interactor.SetRenderWindow(renderer_window)
+    interactor.Initialize()
+    interactor.Start()
     
 
-
-
-
-
 def main():
-    comm = vtk.vtkMPIController()
-    #c.SetGlobalController(None)
-    rank = comm.GetLocalProcessId()
-    npes = comm.GetNumberOfProcesses()
-    #print ("rank %d of size %d" %(rank,npes))
-
-
+    
     parser = argparse.ArgumentParser()
     parser.add_argument('-b','--begin', help='begin step', required=True)
     parser.add_argument('-e','--end', help='end step', required=True)
@@ -63,44 +82,14 @@ def main():
     file_prefix=args.pvtu_prefix
     img_prefix=args.img_prefix
 
-    '''step_begin=0
-    step_end=20
-    step_freq=10
-    file_prefix='vtu/bssn_gr'
-    img_prefix='img/img' 
-    '''
-
-
-    if(rank==0):
-        print ("number of ranks: %d"%(npes))
-    
     imgCount=step_begin/step_freq
     
     for step in range(step_begin,step_end,step_freq):
         # create a new 'XML Partitioned Unstructured Grid Reader'
-        saveImgSlice(file_prefix,img_prefix,step,imgCount,window=[400,400])
+        render_pvtu(file_prefix,img_prefix,step,imgCount,window=[400,400])
         imgCount=imgCount+1
 
-    '''
-    pvtuReader=vtkio.ReadPVTUFile(args.pvtu_name)
-    pvtuReader.GetOutput().GetPointData().SetActiveAttribute("U_CHI", 0)
-    gridSlice=filters.SliceFilter(pvtuReader)
-    warpByScalar=filters.WarpByScalar(gridSlice,'U_CHI',scaleFactor=100)
-    #render.ParallelRenderGeometry(gridSlice,windowSize=[1000,1000],varName='U_CHI',colorbyScalar=True,scalarBar=True,saveImage=True,imageName='test.png',useParallelRendering=False)
-    #render.VolumeRender(pvtuReader,windowSize=[300,300],varName="U_CHI")
-    render.ParallelRenderGeometry(gridSlice,windowSize=[300,300],varName='U_CHI',colorbyScalar=True,scalarBar=True,saveImage=True,imageName='test.png',useParallelRendering=False)
-    #render.VolumeRender(pvtuReader,windowSize=[300,300],varName="U_CHI")
-    #render.renderGeometry(gridSlice)
-    '''
-    '''
-    BH1InitalLoc=utils.BHCoordsToOctree(BHCoords=[-4.0,0,0],maxDepth=12,BHBounds=[-200.0,200.0])
-    BH2InitalLoc=utils.BHCoordsToOctree(BHCoords=[4.0,0,0],maxDepth=12,BHBounds=[-200.0,200.0])
-    if(rank==0):
-        print [BH1InitalLoc,BH2InitalLoc]
-    BH_Loc=filters.ExtractBHLocations(pvtuReader,BH1PrevLoc=BH1InitalLoc,BH2PrevLoc=BH2InitalLoc)
-    if(rank==0):
-         print (BH_Loc)
-    '''
+    
 
 if __name__ == "__main__":
     main()
